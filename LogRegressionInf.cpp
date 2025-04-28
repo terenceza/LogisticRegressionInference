@@ -60,8 +60,8 @@ void LogRegressionInf(int* DataInBuff,  int* PredictBuff,
 // num_samples: number of training samples
 
 void Predict(   DataType* Inputs, DataType* Predictions,
-		 	 	DataType* Weights, DataType Bias,
-				unsigned int NumFeatures, unsigned int NumSamples)
+		DataType* Weights, DataType Bias,
+		unsigned int NumFeatures, unsigned int NumSamples)
 {
 
     // Inputs: data (num_features, num_samples) - now a 1D array
