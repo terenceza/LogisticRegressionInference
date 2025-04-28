@@ -4,9 +4,8 @@
 #include <memory>
 
 void LogRegressionInf(int* DataInBuff,  int* PredictBuff,
-		      int* WeightsBuff)
-					//, int* BiasP,
-				    //  unsigned int* DataDimensionP, unsigned int* NumSamplesP)
+					  int* WeightsBuff ,int* BiasP,
+				      unsigned int* DataDimensionP, unsigned int* NumSamplesP)
 {
 	#pragma HLS INTERFACE s_axilite port=return bundle=CONTROL_BUS
 
@@ -14,17 +13,17 @@ void LogRegressionInf(int* DataInBuff,  int* PredictBuff,
 	#pragma HLS INTERFACE mode=m_axi port=WeightsBuff  depth=256 offset=slave bundle=gmem
 	#pragma HLS INTERFACE mode=m_axi port=PredictBuff  depth=256 offset=slave bundle=gmem
 
-//    #pragma HLS INTERFACE mode=s_axilite port=BiasP
-//    #pragma HLS INTERFACE mode=s_axilite port=DataDimensionP
-//	 #pragma HLS INTERFACE mode=s_axilite port=NumSamplesP
+    #pragma HLS INTERFACE mode=s_axilite port=BiasP
+    #pragma HLS INTERFACE mode=s_axilite port=DataDimensionP
+	#pragma HLS INTERFACE mode=s_axilite port=NumSamplesP
 
 	#pragma HLS INTERFACE mode=s_axilite port=DataInBuff
 	#pragma HLS INTERFACE mode=s_axilite port=WeightsBuff
 	#pragma HLS INTERFACE mode=s_axilite port=PredictBuff
 
 
-	unsigned int DataDim    = 4; //*DataDimensionP; // number of features per sample
-	unsigned int NumSamples = 10; //*NumSamplesP;    // number of samples
+	unsigned int DataDim    = *DataDimensionP; // number of features per sample
+	unsigned int NumSamples = *NumSamplesP;    // number of samples
 
 	//printf("%d %d %d %d %d \n", DataDimension, HiddenDimension, FullDimension, LearningRate, Momentum);
 
@@ -33,23 +32,25 @@ void LogRegressionInf(int* DataInBuff,  int* PredictBuff,
 	DataType Weights [MAX_DATA_SIZE]; 						// number of features per sample - each feature associated with a weight
 	DataType Predicts[MAX_TEST_SAMPLES]; 					// Prediction for each test sample
 
-	DataType Bias = static_cast<DataType>(-0.087511);
+	DataType Bias;
 
 //	#pragma HLS ARRAY_PARTITION variable=Inputs   type=complete
 //	#pragma HLS ARRAY_PARTITION variable=Weights  type=complete
 //	#pragma HLS ARRAY_PARTITION variable=Predicts type=complete
 
-
+	float fBias;
+	memcpy(&fBias, BiasP, sizeof(int));
+	Bias = (DataType)fBias;
 
 
 	// copy DataInBuff to local array
-	CopyFloatToDataTypeBuffers(DataInBuff, Inputs, DataDim * NumSamples);
+	CopyIntToDataTypeBuffers(DataInBuff, Inputs, DataDim * NumSamples);
 
-	CopyFloatToDataTypeBuffers(WeightsBuff, Weights, DataDim);
+	CopyIntToDataTypeBuffers(WeightsBuff, Weights, DataDim);
 
 	Predict(Inputs, Predicts, Weights, Bias, DataDim, NumSamples);
 
-	CopyDataTypeToFloatBuffers(Predicts, PredictBuff, NumSamples);
+	CopyDataTypeToIntBuffers(Predicts, PredictBuff, NumSamples);
 
 }
 
@@ -60,19 +61,15 @@ void LogRegressionInf(int* DataInBuff,  int* PredictBuff,
 // num_samples: number of training samples
 
 void Predict(   DataType* Inputs, DataType* Predictions,
-		DataType* Weights, DataType Bias,
-		unsigned int NumFeatures, unsigned int NumSamples)
+		 	 	DataType* Weights, DataType Bias,
+				unsigned int NumFeatures, unsigned int NumSamples)
 {
 
     // Inputs: data (num_features, num_samples) - now a 1D array
-    // Label: labels (1, num_samples)  - now a 1D array
-    // w: weights (num_features, 1) - now a 1D array
-    // b: bias (scalar)
-    // num_features: number of features (e.g., num_features * num_features * 3 for an image)
-    // num_samples: number of training samples
-    // dw: gradient of cost with respect to w (output, same shape as w) - 1D array
-    // db: gradient of cost with respect to b (output, scalar)
-    // cost: cost of the logistic regression (output, scalar)
+    // Weights: weights (num_features, 1) - now a 1D array
+    // Bias: bias (scalar)
+    // NumFeatures: number of features (e.g., num_features * num_features * 3 for an image)
+    // NumSamples: number of test samples
 
     int i, j;
     DataType z;
@@ -90,7 +87,7 @@ void Predict(   DataType* Inputs, DataType* Predictions,
         Loop2:
         for (j = 0; j < NumFeatures; j++)
         {
-		#pragma HLS PIPELINE off
+			#pragma HLS PIPELINE off
         	//printf("feature (%d,%d) Input: %f Weight: %f \n", i,j, Inputs[i * num_features + j],  w[j]);
 
             z += Weights[j] * Inputs[i * NumFeatures + j]; // Indexing into Inputs
@@ -118,7 +115,7 @@ DataType sigmoid(DataType d)
 }
 
 
-void CopyFloatToDataTypeBuffers(int* From, DataType* To, unsigned int Dim)
+void CopyIntToDataTypeBuffers(int* From, DataType* To, unsigned int Dim)
 {
 	Loop3:
 	float fval;
@@ -129,15 +126,16 @@ void CopyFloatToDataTypeBuffers(int* From, DataType* To, unsigned int Dim)
 	}
 }
 
-void CopyDataTypeToFloatBuffers(DataType* From, int* To, unsigned int Dim)
+void CopyDataTypeToIntBuffers(DataType* From, int* To, unsigned int Dim)
 {
 	Loop3:
 	float fval;
 	for (int i = 0 ; i < Dim ; ++i)
 	{
-	     fval = static_cast<float>(From[i]);
-	    //printf("fval=%f ", fval);
-	     memcpy(&To[i], &fval, sizeof(float));
+
+		fval = static_cast<float>(From[i]);
+		//printf("fval=%f ", fval);
+		memcpy(&To[i], &fval, sizeof(float));
 
 	}
 }
