@@ -20,21 +20,18 @@
 	typedef double CoeffType;
 #endif
 
-void LogRegressionInf(DataType* DataInP, DataType* PredicP,
-					  DataType* WeightsP, DataType* BiasP,
-					  unsigned int* DataDimensionP, unsigned int* NumSamplesP,
-					  DataType* dw, DataType* db, DataType* cost);
+void LogRegressionInf(int* DataInBuff,  int* PredictBuff,
+					  int* WeightsBuff);
 
 void Predict(   DataType* Inputs, DataType* Predictions,
 		 	 	DataType* Weights, DataType Bias,
 				unsigned int NumFeatures, unsigned int NumSamples);
 
 DataType sigmoid(DataType d);
-DataType sigmoidDerivation(DataType d);
-DataType squareError(DataType d1, DataType d2) ;
-//DataType Relu(DataType d);
-//DataType ReluDerivation(DataType d);
+DataType Relu(DataType x);
 
-//void backpropagate();
+void CopyFloatToDataTypeBuffers(int* From, DataType* To, unsigned int Dim);
+void CopyDataTypeToFloatBuffers(DataType* From, int* To, unsigned int Dim);
+
 
 #endif
