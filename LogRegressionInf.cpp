@@ -4,7 +4,7 @@
 #include <memory>
 
 void LogRegressionInf(int* DataInBuff,  int* PredictBuff,
-					  int* WeightsBuff)
+		      int* WeightsBuff)
 					//, int* BiasP,
 				    //  unsigned int* DataDimensionP, unsigned int* NumSamplesP)
 {
@@ -90,7 +90,7 @@ void Predict(   DataType* Inputs, DataType* Predictions,
         Loop2:
         for (j = 0; j < NumFeatures; j++)
         {
-			#pragma HLS PIPELINE off
+		#pragma HLS PIPELINE off
         	//printf("feature (%d,%d) Input: %f Weight: %f \n", i,j, Inputs[i * num_features + j],  w[j]);
 
             z += Weights[j] * Inputs[i * NumFeatures + j]; // Indexing into Inputs
@@ -135,10 +135,9 @@ void CopyDataTypeToFloatBuffers(DataType* From, int* To, unsigned int Dim)
 	float fval;
 	for (int i = 0 ; i < Dim ; ++i)
 	{
-
-		fval = static_cast<float>(From[i]);
-		//printf("fval=%f ", fval);
-		memcpy(&To[i], &fval, sizeof(float));
+	     fval = static_cast<float>(From[i]);
+	    //printf("fval=%f ", fval);
+	     memcpy(&To[i], &fval, sizeof(float));
 
 	}
 }
