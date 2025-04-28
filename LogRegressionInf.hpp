@@ -20,12 +20,11 @@
 	typedef double CoeffType;
 #endif
 
-void LogRegressionInf(int* DataInBuff,  int* PredictBuff,
-					  int* WeightsBuff);
+void LogRegressionInf(int* DataInBuff,  int* PredictBuff, int* WeightsBuff);
 
 void Predict(   DataType* Inputs, DataType* Predictions,
-		 	 	DataType* Weights, DataType Bias,
-				unsigned int NumFeatures, unsigned int NumSamples);
+		DataType* Weights, DataType Bias,
+		unsigned int NumFeatures, unsigned int NumSamples);
 
 DataType sigmoid(DataType d);
 DataType Relu(DataType x);
