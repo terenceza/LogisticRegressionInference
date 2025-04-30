@@ -1,5 +1,5 @@
-#ifndef LOG_REG_ING_HPP
-#define LOG_REG_ING_HPP
+#ifndef LOG_REG_INF_HPP
+#define LOG_REG_INF_HPP
 
 #include <ap_fixed.h>
 
@@ -22,7 +22,7 @@
 
 void LogRegressionInf(int* DataInBuff,  int* PredictBuff,
 		      int* WeightsBuff ,int* BiasP,
-		      unsigned int* DataDimensionP, unsigned int* NumSamplesP);
+     		      unsigned int* DataDimensionP, unsigned int* NumSamplesP);
 
 void Predict(   DataType* Inputs, DataType* Predictions,
 		DataType* Weights, DataType Bias,
