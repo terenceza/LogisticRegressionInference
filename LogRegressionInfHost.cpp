@@ -1,5 +1,5 @@
 /******************************************************************************
-* Sensecoding.com free license
+* Sensecoding.com Integrated solutions for Low-Powered Systems
 * Run on Vitis 
 ******************************************************************************/
 
