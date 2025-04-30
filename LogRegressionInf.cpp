@@ -3,18 +3,18 @@
 #include <algorithm>
 #include <memory>
 
-void LogRegressionInf(int* DataInBuff,  int* PredictBuff,
-					  int* WeightsBuff ,int* BiasP,
-				      unsigned int* DataDimensionP, unsigned int* NumSamplesP)
+void LogRegressionInf(  int* DataInBuff,  int* PredictBuff,
+			int* WeightsBuff ,int* BiasP,
+			unsigned int* DataDimensionP, unsigned int* NumSamplesP)
 {
 	#pragma HLS INTERFACE s_axilite port=return bundle=CONTROL_BUS
 
-	#pragma HLS INTERFACE mode=m_axi port=DataInBuff   depth=256 offset=slave bundle=gmem
-	#pragma HLS INTERFACE mode=m_axi port=WeightsBuff  depth=256 offset=slave bundle=gmem
-	#pragma HLS INTERFACE mode=m_axi port=PredictBuff  depth=256 offset=slave bundle=gmem
+	#pragma HLS INTERFACE mode=m_axi port=DataInBuff   offset=slave bundle=gmem
+	#pragma HLS INTERFACE mode=m_axi port=WeightsBuff  offset=slave bundle=gmem
+	#pragma HLS INTERFACE mode=m_axi port=PredictBuff  offset=slave bundle=gmem
 
-    #pragma HLS INTERFACE mode=s_axilite port=BiasP
-    #pragma HLS INTERFACE mode=s_axilite port=DataDimensionP
+        #pragma HLS INTERFACE mode=s_axilite port=BiasP
+        #pragma HLS INTERFACE mode=s_axilite port=DataDimensionP
 	#pragma HLS INTERFACE mode=s_axilite port=NumSamplesP
 
 	#pragma HLS INTERFACE mode=s_axilite port=DataInBuff
@@ -31,17 +31,11 @@ void LogRegressionInf(int* DataInBuff,  int* PredictBuff,
 	DataType Inputs  [MAX_DATA_SIZE * MAX_TEST_SAMPLES]; 	// an array of all samples with their features
 	DataType Weights [MAX_DATA_SIZE]; 						// number of features per sample - each feature associated with a weight
 	DataType Predicts[MAX_TEST_SAMPLES]; 					// Prediction for each test sample
-
 	DataType Bias;
-
-//	#pragma HLS ARRAY_PARTITION variable=Inputs   type=complete
-//	#pragma HLS ARRAY_PARTITION variable=Weights  type=complete
-//	#pragma HLS ARRAY_PARTITION variable=Predicts type=complete
 
 	float fBias;
 	memcpy(&fBias, BiasP, sizeof(int));
 	Bias = (DataType)fBias;
-
 
 	// copy DataInBuff to local array
 	CopyIntToDataTypeBuffers(DataInBuff, Inputs, DataDim * NumSamples);
@@ -51,7 +45,6 @@ void LogRegressionInf(int* DataInBuff,  int* PredictBuff,
 	Predict(Inputs, Predicts, Weights, Bias, DataDim, NumSamples);
 
 	CopyDataTypeToIntBuffers(Predicts, PredictBuff, NumSamples);
-
 }
 
 // Inputs: data (num_features, num_samples) - now a 1D array
@@ -95,12 +88,7 @@ void Predict(   DataType* Inputs, DataType* Predictions,
         }
 
         Predictions[i] = sigmoid(z);
-
-//        printf("\n");
-//        printf("fval=%f ", Predictions[i]);
-//        printf("feature (%d,%d) Input: %f  z: %f sigmoid: %f \n", i,j, Inputs[i * NumFeatures + j],  z, Predictions[i]);
     }
-
 }
 
 
@@ -134,7 +122,6 @@ void CopyDataTypeToIntBuffers(DataType* From, int* To, unsigned int Dim)
 	{
 
 		fval = static_cast<float>(From[i]);
-		//printf("fval=%f ", fval);
 		memcpy(&To[i], &fval, sizeof(float));
 
 	}
