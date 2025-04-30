@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "LogRegressionInf.h"
+#include "LogRegressionInfHost.hpp"
 #include "xscutimer.h"
 #include <time.h>
 
