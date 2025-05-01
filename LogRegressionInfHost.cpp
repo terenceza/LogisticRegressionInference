@@ -1,21 +1,35 @@
 /******************************************************************************
-* Sensecoding.com Integrated solutions for Low-Powered Systems
+* Sensecoding.com free license
 * Run on Vitis 
 ******************************************************************************/
 
 #include <stdio.h>
+#include <stdlib.h>
+
 #include "platform.h"
 #include "xil_printf.h"
 #include "xlogregressioninf.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "LogRegressionInfHost.hpp"
+#include "LogRegressionInf.h"
 #include "xscutimer.h"
 #include <time.h>
 
 XLogregressioninf LogRegInst;
 XLogregressioninf_Config Cfg;
+
+XScuTimer	Timer;
+XScuTimer_Config *TMRConfigPtr;
+
+void InitTimer()
+{
+    TMRConfigPtr = XScuTimer_LookupConfig(TIMER_DEVICE_ID);
+    XScuTimer_CfgInitialize(&Timer, TMRConfigPtr, TMRConfigPtr->BaseAddr);
+    XScuTimer_SelfTest(&Timer);
+    //load the timer
+    XScuTimer_LoadTimer(&Timer, TIMER_LOAD_VALUE);
+}
 
 void LogRegressionInfInit(XLogregressioninf* Inst, XLogregressioninf_Config* Cfg)
 {
@@ -30,11 +44,6 @@ void LogRegressionInfInit(XLogregressioninf* Inst, XLogregressioninf_Config* Cfg
 
 	XLogregressioninf_InterruptGlobalDisable(Inst);
 	XLogregressioninf_InterruptDisable(Inst, 1);
-}
-
-void NormalizeInputs()
-{
-    int numElements = sizeof(testData) / sizeof(testData[0]);
 }
 
 void WriteDataToBus()
@@ -103,16 +112,14 @@ void WriteWeightsToBus()
 
 int main()
 {
-   unsigned int  LoopCount = 0;
-   unsigned long TickStart = 0;
-   unsigned long TickStop = 0;
-   unsigned long Delta = 0;
-   XScuTimer	Timer;
-
-   int numTestData = sizeof(testData) / sizeof(testData[0]);
+    unsigned int  LoopCount = 0;
+    unsigned long TickStart = 0;
+    unsigned long TickStop = 0;
+    unsigned long Delta = 0;
+    int numTestData = sizeof(testData) / sizeof(testData[0]);
 
     init_platform();
-
+    InitTimer();
     LogRegressionInfInit(&LogRegInst, &Cfg);
 
     // Set start address for data
@@ -136,12 +143,19 @@ int main()
     XLogregressioninf_Set_NumSamplesP(&LogRegInst,NUM_SAMPLES);
 
     XLogregressioninf_Start(&LogRegInst);
+    
+    XScuTimer_Start(&Timer);
+    TickStart = XScuTimer_GetCounterValue(&Timer);
 
     while(!XLogregressioninf_IsDone(&LogRegInst)){}
-    printf("Got response !!!!!!!!!!!!\n");
-    
-    // XScuTimer_Start(&Timer);
-    // TickStart = XScuTimer_GetCounterValue(&Timer);
+
+    TickStop = XScuTimer_GetCounterValue(&Timer);
+    XScuTimer_Stop(&Timer);
+    Delta = TickStart - TickStop; //down count timer
+    double DeltaTimeSec = (double)Delta / (double)XPAR_PS7_CORTEXA9_0_CPU_CLK_FREQ_HZ;
+    xil_printf("Took %d ticks , %d micro sec \n", Delta, (int)((double)1000000.0f * DeltaTimeSec));
+
+    printf("Got response from FPGA...\n");
 
     xil_printf("Read Predictions: ");
     int32_t ival;
